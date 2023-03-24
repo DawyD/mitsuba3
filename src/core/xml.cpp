@@ -37,7 +37,7 @@ NAMESPACE_BEGIN(xml)
 
 // Set of supported XML tags
 enum class Tag {
-    Boolean, Integer, Float, String, Point, Vector, Spectrum, RGB,
+    Boolean, Integer, Float, String, Point, Vector, Spectrum, RGB, AVX,
     Transform, Translate, Matrix, Rotate, Scale, LookAt, Object,
     NamedReference, Include, Alias, Default, Resource, Invalid
 };
@@ -136,6 +136,7 @@ void register_class(const Class *class_) {
         (*tags)["ref"]           = Tag::NamedReference;
         (*tags)["spectrum"]      = Tag::Spectrum;
         (*tags)["rgb"]           = Tag::RGB;
+        (*tags)["avx"]           = Tag::AVX;
         (*tags)["include"]       = Tag::Include;
         (*tags)["alias"]         = Tag::Alias;
         (*tags)["default"]       = Tag::Default;
@@ -815,6 +816,43 @@ static std::pair<std::string, std::string> parse_xml(XMLSource &src, XMLParseCon
                 }
                 break;
 
+            case Tag::AVX : {
+                    check_attributes(src, node, { "name", "value" });
+                    std::vector<std::string> tokens = string::tokenize(node.attribute("value").value());
+
+                    if (tokens.size() == 1) {
+                        for (ushort i = 0; i < 7; ++i)
+                            tokens.push_back(tokens[0]);
+                    }
+                    if (tokens.size() != 8)
+                        src.throw_error(node, "'avx' tag requires one or 8 values (got \"%s\")",
+                                        node.attribute("value").value());
+
+                    Color8f color;
+                    try {
+                        color = Color8f(string::stof<Float>(tokens[0]),
+                                        string::stof<Float>(tokens[1]),
+                                        string::stof<Float>(tokens[2]),
+                                        string::stof<Float>(tokens[3]),
+                                        string::stof<Float>(tokens[4]),
+                                        string::stof<Float>(tokens[5]),
+                                        string::stof<Float>(tokens[6]),
+                                        string::stof<Float>(tokens[7]));
+                    } catch (...) {
+                        src.throw_error(node, "could not parse AVX value \"%s\"", node.attribute("value").value());
+                    }
+
+                    if (!within_spectrum) {
+                        std::string name = node.attribute("name").value();
+                        ref<Object> obj = detail::create_texture_from_avx(
+                            name, color, ctx.variant, within_emitter);
+                        props.set_object(name, obj);
+                    } else {
+                        props.set_color8("color8", color);
+                    }
+                }
+                break;
+
             case Tag::Spectrum: {
                     check_attributes(src, node, { "name", "value", "filename" }, false);
                     std::string name = node.attribute("name").value();
@@ -1185,6 +1223,24 @@ ref<Object> create_texture_from_rgb(const std::string &name,
 
     if (!within_emitter && is_unbounded_spectrum(name))
         props.set_bool("unbounded", true);
+
+    ref<Object> texture = PluginManager::instance()->create_object(
+        props, Class::for_name("Texture", variant));
+    std::vector<ref<Object>> children = texture->expand();
+    if (!children.empty())
+        return (Object *) children[0].get();
+    return texture;
+}
+
+ref<Object> create_texture_from_avx(const std::string &name,
+                                    Color<float, 8> color,
+                                    const std::string &variant,
+                                    bool within_emitter) {
+    Properties props("avx");
+    props.set_color8("color8", color);
+
+    //if (!within_emitter && is_unbounded_spectrum(name))
+    props.set_bool("unbounded", true);
 
     ref<Object> texture = PluginManager::instance()->create_object(
         props, Class::for_name("Texture", variant));

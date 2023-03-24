@@ -19,6 +19,11 @@ __pycache__
 
 # Default build directory
 /build*
+/cmake-build-debug
+/cmake-build-release
+
+# CLion
+/.idea
 
 # Auto-generated documentation files
 /docs/generated/plugins_*.rst

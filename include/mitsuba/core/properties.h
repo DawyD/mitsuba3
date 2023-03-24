@@ -42,9 +42,11 @@ public:
         Long,              /// 64-bit signed integer
         Float,             /// Floating point value
         Array3f,           /// 3D array
+        Array8f,           /// 8D array
         Transform,         /// 4x4 transform for homogeneous coordinates
         AnimatedTransform, /// An animated 4x4 transformation
         Color,             /// Tristimulus color value
+        Color8,            /// 8-color value
         String,            /// String
         NamedReference,    /// Named reference to another named object
         Object,            /// Arbitrary object
@@ -54,6 +56,7 @@ public:
     // Scene parsing in double precision
     using Float = double;
     using Array3f = dr::Array<Float, 3>;
+    using Array8f = dr::Array<Float, 8>;
     MI_IMPORT_CORE_TYPES()
 
     /// Construct an empty property container
@@ -192,8 +195,14 @@ public:  // Type-specific getters and setters ----------------------------------
     /// Store a 3D array in the Properties instance
     void set_array3f(const std::string &name, const Array3f &value, bool error_duplicates = true);
 
+    /// Store a 8D array in the Properties instance
+    void set_array8f(const std::string &name, const Array8f &value, bool error_duplicates = true);
+
     /// Store a color in the Properties instance
     void set_color(const std::string &name, const Color3f &value, bool error_duplicates = true);
+
+    /// Store a color8 in the Properties instance
+    void set_color8(const std::string &name, const Color8f &value, bool warn_duplicates = true);
 
     /// Store a 4x4 homogeneous coordinate transformation in the Properties instance
     void set_transform(const std::string &name, const Transform4f &value, bool error_duplicates = true);
@@ -382,12 +391,16 @@ EXTERN_EXPORT_PROPERTY_ACCESSOR(T(uint64_t))
 EXTERN_EXPORT_PROPERTY_ACCESSOR(T(int64_t))
 EXTERN_EXPORT_PROPERTY_ACCESSOR(T(dr::Array<float, 3>))
 EXTERN_EXPORT_PROPERTY_ACCESSOR(T(dr::Array<double, 3>))
+EXTERN_EXPORT_PROPERTY_ACCESSOR(T(dr::Array<float, 8>))
+EXTERN_EXPORT_PROPERTY_ACCESSOR(T(dr::Array<double, 8>))
 EXTERN_EXPORT_PROPERTY_ACCESSOR(T(Point<float, 3>))
 EXTERN_EXPORT_PROPERTY_ACCESSOR(T(Point<double, 3>))
 EXTERN_EXPORT_PROPERTY_ACCESSOR(T(Vector<float, 3>))
 EXTERN_EXPORT_PROPERTY_ACCESSOR(T(Vector<double, 3>))
 EXTERN_EXPORT_PROPERTY_ACCESSOR(T(Color<float, 3>))
 EXTERN_EXPORT_PROPERTY_ACCESSOR(T(Color<double, 3>))
+EXTERN_EXPORT_PROPERTY_ACCESSOR(T(Color<float, 8>))
+EXTERN_EXPORT_PROPERTY_ACCESSOR(T(Color<double, 8>))
 EXTERN_EXPORT_PROPERTY_ACCESSOR(T(Transform<Point<float, 4>>))
 EXTERN_EXPORT_PROPERTY_ACCESSOR(T(Transform<Point<double, 4>>))
 EXTERN_EXPORT_PROPERTY_ACCESSOR(T(std::string))

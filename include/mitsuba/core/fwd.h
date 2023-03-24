@@ -117,11 +117,13 @@ template <typename Float_> struct CoreAliases {
     using Vector2f = Vector<Float, 2>;
     using Vector3f = Vector<Float, 3>;
     using Vector4f = Vector<Float, 4>;
+    using Vector8f = Vector<Float, 8>;
 
     using Vector1d = Vector<Float64, 1>;
     using Vector2d = Vector<Float64, 2>;
     using Vector3d = Vector<Float64, 3>;
     using Vector4d = Vector<Float64, 4>;
+    using Vector8d = Vector<Float64, 8>;
 
     using Point1i = Point<Int32, 1>;
     using Point2i = Point<Int32, 2>;
@@ -173,8 +175,10 @@ template <typename Float_> struct CoreAliases {
 
     using Color1f = Color<Float, 1>;
     using Color3f = Color<Float, 3>;
+    using Color8f = Color<Float, 8>;
     using Color1d = Color<Float64, 1>;
     using Color3d = Color<Float64, 3>;
+    using Color8d = Color<Float64, 8>;
 
     using TensorXf = dr::Tensor<mitsuba::DynamicBuffer<Float>>;
 
@@ -188,6 +192,7 @@ template <typename Float_> struct CoreAliases {
      */
     using Array1f = dr::Array<Float, 1>;
     using Array3f = dr::Array<Float, 3>;
+    using Array8f = dr::Array<Float, 8>;
     using DynamicBuffer = mitsuba::DynamicBuffer<Float>;
 
 };
@@ -220,10 +225,12 @@ template <typename Float_> struct CoreAliases {
     using prefix ## Vector2f             = typename prefix ## CoreAliases::Vector2f;               \
     using prefix ## Vector3f             = typename prefix ## CoreAliases::Vector3f;               \
     using prefix ## Vector4f             = typename prefix ## CoreAliases::Vector4f;               \
+    using prefix ## Vector8f             = typename prefix ## CoreAliases::Vector8f;               \
     using prefix ## Vector1d             = typename prefix ## CoreAliases::Vector1d;               \
     using prefix ## Vector2d             = typename prefix ## CoreAliases::Vector2d;               \
     using prefix ## Vector3d             = typename prefix ## CoreAliases::Vector3d;               \
     using prefix ## Vector4d             = typename prefix ## CoreAliases::Vector4d;               \
+    using prefix ## Vector8d             = typename prefix ## CoreAliases::Vector8d;               \
     using prefix ## Point1i              = typename prefix ## CoreAliases::Point1i;                \
     using prefix ## Point2i              = typename prefix ## CoreAliases::Point2i;                \
     using prefix ## Point3i              = typename prefix ## CoreAliases::Point3i;                \
@@ -265,8 +272,10 @@ template <typename Float_> struct CoreAliases {
     using prefix ## Transform4d          = typename prefix ## CoreAliases::Transform4d;            \
     using prefix ## Color1f              = typename prefix ## CoreAliases::Color1f;                \
     using prefix ## Color3f              = typename prefix ## CoreAliases::Color3f;                \
+    using prefix ## Color8f              = typename prefix ## CoreAliases::Color8f;                \
     using prefix ## Color1d              = typename prefix ## CoreAliases::Color1d;                \
     using prefix ## Color3d              = typename prefix ## CoreAliases::Color3d;                \
+    using prefix ## Color8d              = typename prefix ## CoreAliases::Color8d;                \
     using prefix ## TensorXf             = typename prefix ## CoreAliases::TensorXf;               \
     using prefix ## Texture1f            = typename prefix ## CoreAliases::Texture1f;              \
     using prefix ## Texture2f            = typename prefix ## CoreAliases::Texture2f;              \

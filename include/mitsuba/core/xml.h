@@ -77,6 +77,12 @@ extern MI_EXPORT_LIB ref<Object> create_texture_from_rgb(
                                         const std::string &variant,
                                         bool within_emitter);
 
+extern MI_EXPORT_LIB ref<Object> create_texture_from_avx(
+                                        const std::string &name,
+                                        Color<float, 8> color,
+                                        const std::string &variant,
+                                        bool within_emitter);
+
 /// Create a Texture object from a constant value or spectral values if available
 extern MI_EXPORT_LIB ref<Object> create_texture_from_spectrum(
                                         const std::string &name,

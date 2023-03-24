@@ -18,7 +18,9 @@ NAMESPACE_BEGIN(mitsuba)
 
 using Float       = typename Properties::Float;
 using Color3f     = typename Properties::Color3f;
+using Color8f     = typename Properties::Color8f;
 using Array3f     = typename Properties::Array3f;
+using Array8f     = typename Properties::Array8f;
 using Transform4f = typename Properties::Transform4f;
 
 using VariantType = variant<
@@ -26,9 +28,11 @@ using VariantType = variant<
     int64_t,
     Float,
     Array3f,
+    Array8f,
     std::string,
     Transform4f,
     Color3f,
+    Color8f,
     NamedReference,
     ref<Object>,
     const void *
@@ -85,12 +89,21 @@ T get_impl(const Iterator &it) {
 template <typename T>
 T get_routing(const Iterator &it) {
     if constexpr (dr::is_static_array_v<T>) {
-        Assert(T::Size == 3);
-        if constexpr (std::is_same_v<T, Color<float, 3>> ||
-                      std::is_same_v<T, Color<double, 3>>)
-            return (T) get_impl<Color3f, Array3f>(it);
-        else
-            return (T) get_impl<Array3f>(it);
+        if constexpr (T::Size == 3) {
+            //Assert(T::Size == 3);
+            if constexpr (std::is_same_v<T, Color<float, 3>> ||
+                          std::is_same_v<T, Color<double, 3>>)
+                return (T) get_impl<Color3f, Array3f>(it);
+            else
+                return (T) get_impl<Array3f>(it);
+        }
+        else if constexpr (T::Size == 8) {
+            if constexpr (std::is_same_v<T, Color<float, 8>> ||
+                          std::is_same_v<T, Color<double, 8>>)
+                return (T) get_impl<Color8f, Array8f>(it);
+            else
+                return (T) get_impl<Array8f>(it);
+        }
     }
 
     if constexpr (std::is_same_v<T, Transform<Point<float, 4>>> ||
@@ -173,6 +186,7 @@ DEFINE_PROPERTY_SETTER(bool,         set_bool)
 DEFINE_PROPERTY_SETTER(int64_t,      set_long)
 DEFINE_PROPERTY_SETTER(Transform4f,  set_transform)
 DEFINE_PROPERTY_SETTER(Color3f,      set_color)
+DEFINE_PROPERTY_SETTER(Color8f,    set_color8)
 DEFINE_PROPERTY_ACCESSOR(std::string,    string,  set_string,          string)
 DEFINE_PROPERTY_ACCESSOR(NamedReference, ref,     set_named_reference, named_reference)
 DEFINE_PROPERTY_ACCESSOR(ref<Object>,    object,  set_object,          object)
@@ -209,9 +223,11 @@ namespace {
         Type operator()(const int64_t &) { return Type::Long; }
         Type operator()(const Float &) { return Type::Float; }
         Type operator()(const Array3f &) { return Type::Array3f; }
+        Type operator()(const Array8f &) { return Type::Array8f; }
         Type operator()(const std::string &) { return Type::String; }
         Type operator()(const Transform4f &) { return Type::Transform; }
         Type operator()(const Color3f &) { return Type::Color; }
+        Type operator()(const Color8f &) { return Type::Color8; }
         Type operator()(const NamedReference &) { return Type::NamedReference; }
         Type operator()(const ref<Object> &) { return Type::Object; }
         Type operator()(const void *&) { return Type::Pointer; }
@@ -225,9 +241,11 @@ namespace {
         void operator()(const int64_t &i) { os << i; }
         void operator()(const Float &f) { os << f; }
         void operator()(const Array3f &t) { os << t; }
+        void operator()(const Array8f &t) { os << t; }
         void operator()(const std::string &s) { os << "\"" << s << "\""; }
         void operator()(const Transform4f &t) { os << t; }
         void operator()(const Color3f &t) { os << t; }
+        void operator()(const Color8f &t) { os << t; }
         void operator()(const NamedReference &nr) { os << "\"" << (const std::string &) nr << "\""; }
         void operator()(const ref<Object> &o) { os << o->to_string(); }
         void operator()(const void *&p) { os << p; }
@@ -425,6 +443,14 @@ void Properties::set_array3f(const std::string &name, const Array3f &value, bool
     d->entries[name].queried = false;
 }
 
+/// Array8f setter
+void Properties::set_array8f(const std::string &name, const Array8f &value, bool error_duplicates) {
+    if (has_property(name) && error_duplicates)
+        Log(Error, "Property \"%s\" was specified multiple times!", name);
+    d->entries[name].data = (Array8f) value;
+    d->entries[name].queried = false;
+}
+
 #if 0
 /// AnimatedTransform setter.
 void Properties::set_animated_transform(const std::string &name,
@@ -525,12 +551,16 @@ EXPORT_PROPERTY_ACCESSOR(T(uint64_t))
 EXPORT_PROPERTY_ACCESSOR(T(int64_t))
 EXPORT_PROPERTY_ACCESSOR(T(dr::Array<float, 3>))
 EXPORT_PROPERTY_ACCESSOR(T(dr::Array<double, 3>))
+EXPORT_PROPERTY_ACCESSOR(T(dr::Array<float, 8>))
+EXPORT_PROPERTY_ACCESSOR(T(dr::Array<double, 8>))
 EXPORT_PROPERTY_ACCESSOR(T(Point<float, 3>))
 EXPORT_PROPERTY_ACCESSOR(T(Point<double, 3>))
 EXPORT_PROPERTY_ACCESSOR(T(Vector<float, 3>))
 EXPORT_PROPERTY_ACCESSOR(T(Vector<double, 3>))
 EXPORT_PROPERTY_ACCESSOR(T(Color<float, 3>))
 EXPORT_PROPERTY_ACCESSOR(T(Color<double, 3>))
+EXPORT_PROPERTY_ACCESSOR(T(Color<float, 8>))
+EXPORT_PROPERTY_ACCESSOR(T(Color<double, 8>))
 EXPORT_PROPERTY_ACCESSOR(T(Transform<Point<float, 4>>))
 EXPORT_PROPERTY_ACCESSOR(T(Transform<Point<double, 4>>))
 EXPORT_PROPERTY_ACCESSOR(T(std::string))

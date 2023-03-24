@@ -124,6 +124,7 @@ public:
             if (!b)
                 Throw("Property \"bitmap\" must be a Bitmap instance.");
             bitmap = b;
+            bitmap = b;
         } else {
             FileResolver *fs = Thread::thread()->file_resolver();
             fs::path file_path = fs->resolve(props.string("filename"));
@@ -548,8 +549,11 @@ protected:
                       v1 = dr::fmadd(w0.x(), v01, w1.x() * v11),
                       v  = dr::fmadd(w0.y(), v0, w1.y() * v1);
 
-            if constexpr (is_monochromatic_v<Spectrum>)
+
+            if constexpr (is_monochromatic_v<Spectrum> && nr_channels_v<Spectrum> == 1)
                 return dr::head<1>(v) * m_scale;
+            if constexpr (is_monochromatic_v<Spectrum>)
+                return v.x() * m_scale;
             else
                 return v * m_scale;
         }

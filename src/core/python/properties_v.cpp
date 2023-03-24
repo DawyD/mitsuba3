@@ -39,8 +39,12 @@ py::object properties_get(const Properties& p, const std::string &key) {
         return py::cast((std::string) p.named_reference(key));
     else if (type == Properties::Type::Color)
         return py::cast(p.get<Color<PFloat, 3>>(key));
+    else if (type == Properties::Type::Color8)
+        return py::cast(p.get<Color<PFloat, 8>>(key));
     else if (type == Properties::Type::Array3f)
         return py::cast(p.get<dr::Array<PFloat, 3>>(key));
+    else if (type == Properties::Type::Array8f)
+        return py::cast(p.get<dr::Array<PFloat, 8>>(key));
     else if (type == Properties::Type::Transform)
         return py::cast(p.get<Transform<Point<PFloat, 4>>>(key));
     // else if (type == Properties::Type::AnimatedTransform)
@@ -58,6 +62,8 @@ MI_PY_EXPORT(Properties) {
     MI_PY_CHECK_ALIAS(Properties, "Properties") {
         using Color3f = Color<float, 3>;
         using Color3d = Color<double, 3>;
+        using Color8f = Color<float, 8>;
+        using Color8d = Color<double, 8>;
 
         auto p = py::class_<Properties>(m, "Properties", D(Properties))
             // Constructors
@@ -91,7 +97,10 @@ MI_PY_EXPORT(Properties) {
             .SET_ITEM_BINDING(string, std::string)
             .SET_ITEM_BINDING(color, Color3f, py::arg(), py::arg().noconvert())
             .SET_ITEM_BINDING(color, Color3d, py::arg(), py::arg().noconvert())
+            .SET_ITEM_BINDING(color8, Color8f, py::arg(), py::arg().noconvert())
+            .SET_ITEM_BINDING(color8, Color8d, py::arg(), py::arg().noconvert())
             .SET_ITEM_BINDING(array3f, typename Properties::Array3f)
+            .SET_ITEM_BINDING(array8f, typename Properties::Array8f)
             .SET_ITEM_BINDING(transform, typename Properties::Transform4f)
             // .SET_ITEM_BINDING(animated_transform, ref<AnimatedTransform>)
             .SET_ITEM_BINDING(object, ref<Object>)
@@ -125,9 +134,11 @@ MI_PY_EXPORT(Properties) {
             .value("Long",              Properties::Type::Long)
             .value("Float",             Properties::Type::Float)
             .value("Array3f",           Properties::Type::Array3f)
+            .value("Array8f",           Properties::Type::Array8f)
             .value("Transform",         Properties::Type::Transform)
             // .value("AnimatedTransform", Properties::Type::AnimatedTransform)
             .value("Color",             Properties::Type::Color)
+            .value("Color8",             Properties::Type::Color8)
             .value("String",            Properties::Type::String)
             .value("NamedReference",    Properties::Type::NamedReference)
             .value("Object",            Properties::Type::Object)

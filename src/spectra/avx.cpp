@@ -7,9 +7,9 @@ NAMESPACE_BEGIN(mitsuba)
 
 /**!
 
-.. _spectrum-srgb:
+.. _spectrum-avx:
 
-sRGB spectrum (:monosp:`srgb`)
+sRGB spectrum (:monosp:`avx`)
 ------------------------------
 
 .. pluginparameters::
@@ -17,50 +17,46 @@ sRGB spectrum (:monosp:`srgb`)
 
  * - color
    - :paramtype:`color`
-   - The corresponding sRGB color value.
+   - The corresponding AVX color value.
 
  * - value
    - :paramtype:`color`
-   - Spectral upsampling model coefficients of the srgb color value.
+   - Spectral upsampling model coefficients of the avx color value.
    - |exposed|, |differentiable|
 
-In spectral render modes, this smooth spectrum is the result of the
-*spectral upsampling* process :cite:`Jakob2019Spectral` used by the system.
-In RGB render modes, this spectrum represents a constant RGB value.
-In monochrome modes, this spectrum represents a constant luminance value.
+ The plugin is only intended to be used in the AVX mode
+In AVX render modes, this spectrum represents a constant AVX value.
 
 .. tabs::
     .. code-tab:: xml
-        :name: srgb
+        :name: avx
 
-        <spectrum type="srgb">
-            <rgb name="color" value="10, 20, 250"/>
+        <spectrum type="avx">
+            <rgb name="color" value="10, 20, 250, 10, 233, 12, 12, 98"/>
         </spectrum>
 
     .. code-tab:: python
 
         'type': 'srgb',
-        'color': [10, 20, 250]
+        'color': [10, 20, 250, 10, 233, 12, 12, 98]
 
  */
 
 template <typename Float, typename Spectrum>
-class SRGBReflectanceSpectrum final : public Texture<Float, Spectrum> {
+class AVXReflectanceSpectrum final : public Texture<Float, Spectrum> {
 public:
     MI_IMPORT_TYPES(Texture)
 
-    SRGBReflectanceSpectrum(const Properties &props) : Texture(props) {
-        ScalarColor3f color = props.get<ScalarColor3f>("color");
+    AVXReflectanceSpectrum(const Properties &props) : Texture(props) {
+        ScalarColor8f color = props.get<ScalarColor8f>("color8");
 
         if (dr::any(color < 0 || color > 1) && !props.get<bool>("unbounded", false))
             Throw("Invalid RGB reflectance value %s, must be in the range [0, 1]!", color);
 
-        if constexpr (is_spectral_v<Spectrum>)
-            m_value = srgb_model_fetch(color);
-        else if constexpr (is_rgb_v<Spectrum>)
+        if constexpr (is_monochromatic_v<Spectrum> && nr_channels_v<Spectrum> == 8)
             m_value = color;
         else
-            m_value = luminance(color);
+            Throw("AVXReflectance spectrum can be only used in the avx mode");
 
         dr::make_opaque(m_value);
     }
@@ -76,10 +72,10 @@ public:
     UnpolarizedSpectrum eval(const SurfaceInteraction3f &si, Mask active) const override {
         MI_MASKED_FUNCTION(ProfilerPhase::TextureEvaluate, active);
 
-        if constexpr (is_spectral_v<Spectrum>)
-            return srgb_model_eval<UnpolarizedSpectrum>(m_value, si.wavelengths);
-        else
+        if constexpr (is_monochromatic_v<Spectrum> && nr_channels_v<Spectrum> == 8)
             return m_value;
+        else
+            Throw("AVXReflectance spectrum can be only used in the avx mode");
     }
 
     Float eval_1(const SurfaceInteraction3f & /*it*/, Mask active) const override {
@@ -121,7 +117,7 @@ public:
 
     std::string to_string() const override {
         std::ostringstream oss;
-        oss << "SRGBReflectanceSpectrum[" << std::endl
+        oss << "AVXReflectanceSpectrum[" << std::endl
             << "  value = " << string::indent(m_value) << std::endl
             << "]";
         return oss.str();
@@ -137,6 +133,6 @@ protected:
     Color<Float, nr_channels_v<Spectrum>> m_value;
 };
 
-MI_IMPLEMENT_CLASS_VARIANT(SRGBReflectanceSpectrum, Texture)
-MI_EXPORT_PLUGIN(SRGBReflectanceSpectrum, "sRGB spectrum")
+MI_IMPLEMENT_CLASS_VARIANT(AVXReflectanceSpectrum, Texture)
+MI_EXPORT_PLUGIN(AVXReflectanceSpectrum, "AVX spectrum")
 NAMESPACE_END(mitsuba)

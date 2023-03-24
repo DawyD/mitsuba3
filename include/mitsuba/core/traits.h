@@ -24,6 +24,7 @@ struct spectrum_traits<Color<Float, 1>> {
     static constexpr bool is_rgb             = false;
     static constexpr bool is_spectral        = false;
     static constexpr bool is_polarized       = false;
+    static constexpr size_t nr_channels        = 1;
 };
 
 template <typename Float>
@@ -35,6 +36,19 @@ struct spectrum_traits<Color<Float, 3>> {
     static constexpr bool is_rgb             = true;
     static constexpr bool is_spectral        = false;
     static constexpr bool is_polarized       = false;
+    static constexpr size_t nr_channels        = 3;
+};
+
+template <typename Float>
+struct spectrum_traits<Color<Float, 8>> {
+    using Scalar                             = Color<dr::scalar_t<Float>, 8>;
+    using Wavelength                         = Color<Float, 0>;
+    using Unpolarized                        = Color<Float, 8>;
+    static constexpr bool is_monochromatic   = true;
+    static constexpr bool is_rgb             = false;
+    static constexpr bool is_spectral        = false;
+    static constexpr bool is_polarized       = false;
+    static constexpr size_t nr_channels        = 8;
 };
 
 template <typename Float, size_t Size>
@@ -46,6 +60,7 @@ struct spectrum_traits<Spectrum<Float, Size>> {
     static constexpr bool is_rgb             = false;
     static constexpr bool is_spectral        = true;
     static constexpr bool is_polarized       = false;
+    static constexpr size_t nr_channels        = Size;
 };
 
 template <typename T>
@@ -75,6 +90,7 @@ template <typename T> constexpr bool is_monochromatic_v = detail::spectrum_trait
 template <typename T> constexpr bool is_rgb_v = detail::spectrum_traits<T>::is_rgb;
 template <typename T> constexpr bool is_spectral_v = detail::spectrum_traits<T>::is_spectral;
 template <typename T> constexpr bool is_polarized_v = detail::spectrum_traits<T>::is_polarized;
+template <typename T> constexpr size_t nr_channels_v = detail::spectrum_traits<T>::nr_channels;
 template <typename T> using scalar_spectrum_t = typename detail::spectrum_traits<T>::Scalar;
 template <typename T> using wavelength_t = typename detail::spectrum_traits<T>::Wavelength;
 template <typename T> using unpolarized_spectrum_t = typename detail::spectrum_traits<T>::Unpolarized;

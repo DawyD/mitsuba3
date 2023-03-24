@@ -5624,9 +5624,13 @@ Returns:
 
 static const char *__doc_mitsuba_Properties_set_array3f = R"doc(Store a 3D array in the Properties instance)doc";
 
+static const char *__doc_mitsuba_Properties_set_array8f = R"doc(Store a 8D array in the Properties instance)doc";
+
 static const char *__doc_mitsuba_Properties_set_bool = R"doc(Store a boolean value in the Properties instance)doc";
 
 static const char *__doc_mitsuba_Properties_set_color = R"doc(Store a color in the Properties instance)doc";
+
+static const char *__doc_mitsuba_Properties_set_color8 = R"doc(Store a color8 in the Properties instance)doc";
 
 static const char *__doc_mitsuba_Properties_set_float = R"doc(Store a floating point value in the Properties instance)doc";
 

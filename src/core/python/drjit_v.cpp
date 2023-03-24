@@ -54,6 +54,7 @@ void dr_bind_vp(py::module_ &m, const std::string &prefix = "") {
     dr_bind_vp_impl<Type, 2, IsDouble>(m, prefix);
     dr_bind_vp_impl<Type, 3, IsDouble>(m, prefix);
     dr_bind_vp_impl<Type, 4, IsDouble>(m, prefix);
+    dr_bind_vp_impl<Type, 8, IsDouble>(m, prefix);
 }
 
 MI_PY_EXPORT(DrJit) {
@@ -106,16 +107,20 @@ MI_PY_EXPORT(DrJit) {
     bind_dr<Color<Float, 0>, dr::Array<Float, 0>>(m, "Color0f");
     bind_dr<Color<Float, 1>, dr::Array<Float, 1>>(m, "Color1f");
     bind_dr<Color<Float, 3>, dr::Array<Float, 3>>(m, "Color3f");
+    bind_dr<Color<Float, 8>, dr::Array<Float, 8>>(m, "Color8f");
     bind_dr<Color<ScalarFloat, 0>, dr::Array<ScalarFloat, 0>>(m, "ScalarColor0f");
     bind_dr<Color<ScalarFloat, 1>, dr::Array<ScalarFloat, 1>>(m, "ScalarColor1f");
     bind_dr<Color<ScalarFloat, 3>, dr::Array<ScalarFloat, 3>>(m, "ScalarColor3f");
+    bind_dr<Color<ScalarFloat, 8>, dr::Array<ScalarFloat, 8>>(m, "ScalarColor8f");
 
     bind_dr<Color<Float64, 0>, dr::Array<Float64, 0>>(m, "Color0d");
     bind_dr<Color<Float64, 1>, dr::Array<Float64, 1>>(m, "Color1d");
     bind_dr<Color<Float64, 3>, dr::Array<Float64, 3>>(m, "Color3d");
+    bind_dr<Color<Float64, 8>, dr::Array<Float64, 8>>(m, "Color8d");
     bind_dr<Color<ScalarFloat64, 0>, dr::Array<ScalarFloat64, 0>>(m, "ScalarColor0d");
     bind_dr<Color<ScalarFloat64, 1>, dr::Array<ScalarFloat64, 1>>(m, "ScalarColor1d");
     bind_dr<Color<ScalarFloat64, 3>, dr::Array<ScalarFloat64, 3>>(m, "ScalarColor3d");
+    bind_dr<Color<ScalarFloat64, 8>, dr::Array<ScalarFloat64, 8>>(m, "ScalarColor8d");
 
     bind_dr<Normal3f, dr::Array<Float, 3>>(m, "Normal3f");
     bind_dr<Normal3d, dr::Array<Float64, 3>>(m, "Normal3d");
