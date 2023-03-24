@@ -140,6 +140,11 @@
         "spectrum": "MuellerMatrix<Color<Float, 3>>"
     },
 
+    "scalar_avx": {
+        "float": "float",
+        "spectrum": "Color<Float, 8>"
+    },
+
     "scalar_spectral": {
         "float": "float",
         "spectrum": "Spectrum<Float, 4>"
