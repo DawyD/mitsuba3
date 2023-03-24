@@ -45,3 +45,4 @@
 [submodule "ext/drjit"]
 	path = ext/drjit
 	url = https://gitlab.csem.local/div-m/research/defect-anomaly-detection/ps-rendering/drjit
+	branch = AVX-array
