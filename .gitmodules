@@ -44,4 +44,4 @@
 	shallow = true
 [submodule "ext/drjit"]
 	path = ext/drjit
-	url = https://github.com/mitsuba-renderer/drjit
+	url = https://gitlab.csem.local/div-m/research/defect-anomaly-detection/ps-rendering/drjit
