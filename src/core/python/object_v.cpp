@@ -3,6 +3,7 @@
 #include <mitsuba/python/python.h>
 #include <drjit/dynamic.h>
 #include <drjit/tensor.h>
+#include <string>
 
 /// Defines a list of types that plugins can expose as tweakable/differentiable parameters
 #define APPLY_FOR_EACH(T) \
@@ -12,7 +13,8 @@
     T(Color3d); T(Color8d); T(Vector2i); T(Vector2u); T(Vector3i); T(Vector3u);\
     T(Point2u); T(Point3u); T(Point2f); T(Point3f); T(Vector2f); T(Vector3f);  \
     T(Vector4f); T(Normal3f); T(Frame3f); T(Mask); T(Matrix3f); T(Matrix4f);   \
-    T(Transform3f); T(Transform4f); T(Transform4d); T(Transform4d); T(TensorXf);\
+    T(Transform3f); T(Transform4f); T(Transform4d); T(Transform4d);            \
+    T(TensorXf); T(std::string);                                               \
     if constexpr (!std::is_same_v<Float, ScalarFloat>) {                       \
         T(ScalarFloat32); T(ScalarFloat64); T(ScalarInt32); T(ScalarUInt32);   \
         T(ScalarColor1f); T(ScalarColor3f); T(ScalarColor8f); T(ScalarColor1d);\
