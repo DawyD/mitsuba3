@@ -151,6 +151,9 @@ public:
     /// Return the offset of the crop window
     const ScalarPoint2u &crop_offset() const { return m_crop_offset; }
 
+    /// Return the number of color channels
+    size_t nr_color_channels() const { return m_color_channels; }
+
     /**
      * \brief Set the size and offset of the film's crop window.
      *
@@ -218,6 +221,7 @@ protected:
     bool m_sample_border;
     ref<ReconstructionFilter> m_filter;
     ref<Texture> m_srf;
+    size_t m_color_channels;
 };
 
 MI_EXTERN_CLASS(Film)

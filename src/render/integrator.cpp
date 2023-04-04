@@ -414,7 +414,7 @@ SamplingIntegrator<Float, Spectrum>::render_sample(const Scene *scene,
     const Medium *medium = sensor->medium();
 
     auto [spec, valid] = sample(scene, sampler, ray, medium,
-               aovs + (has_alpha ? 5 : 4) /* skip R,G,B,[A],W */, active);
+               aovs + film->nr_color_channels() + (has_alpha ? 2 : 1) /* skip R,G,B,[A],W */, active);
 
     UnpolarizedSpectrum spec_u = unpolarized_spectrum(ray_weight * spec);
 

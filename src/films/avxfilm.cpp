@@ -135,7 +135,7 @@ template <typename Float, typename Spectrum>
 class AVXFilm final : public Film<Float, Spectrum> {
 public:
     MI_IMPORT_BASE(Film, m_size, m_crop_size, m_crop_offset, m_sample_border,
-                   m_filter, m_flags)
+                   m_filter, m_flags, m_color_channels)
     MI_IMPORT_TYPES(ImageBlock)
 
     AVXFilm(const Properties &props) : Base(props) {
@@ -160,6 +160,8 @@ public:
         m_compensate = props.get<bool>("compensate", false);
 
         props.mark_queried("banner"); // no banner in Mitsuba 3
+
+        m_color_channels = 8;
     }
 
     size_t prepare(const std::vector<std::string> &aovs) override {

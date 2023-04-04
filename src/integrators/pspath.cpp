@@ -184,7 +184,8 @@ public:
         const Medium *medium = sensor->medium();
 
 
-        auto [spec, valid] = sample(scene, sampler, ray, medium, nullptr, active);
+        auto [spec, valid] = sample(scene, sampler, ray, medium,
+                   aovs + film->nr_color_channels() + (has_alpha ? 2 : 1), active);
 
         UnpolarizedSpectrum spec_u = unpolarized_spectrum(ray_weight * spec);
 
