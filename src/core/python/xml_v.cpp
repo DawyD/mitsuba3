@@ -239,6 +239,7 @@ void parse_dictionary(DictParseContext &ctx,
                       const py::dict &dict) {
     MI_IMPORT_CORE_TYPES()
     using ScalarArray3f = dr::Array<ScalarFloat, 3>;
+    using ScalarArray8f = dr::Array<ScalarFloat, 8>;
 
     auto &inst = ctx.instances[path];
 
@@ -280,7 +281,9 @@ void parse_dictionary(DictParseContext &ctx,
         SET_PROPS(py::float_, Properties::Float, set_float);
         SET_PROPS(py::str, std::string, set_string);
         SET_PROPS(ScalarColor3f, ScalarColor3f, set_color);
+        SET_PROPS(ScalarColor8f, ScalarColor8f, set_color8);
         SET_PROPS(ScalarArray3f, ScalarArray3f, set_array3f);
+        SET_PROPS(ScalarArray8f, ScalarArray8f, set_array8f);
         SET_PROPS(ScalarTransform4f, ScalarTransform4f, set_transform);
 
         // Parse nested dictionary
@@ -326,6 +329,12 @@ void parse_dictionary(DictParseContext &ctx,
         // Try to cast to Array3f (list, tuple, numpy.array, ...)
         try {
             props.set_array3f(key, value.template cast<Properties::Array3f>());
+            continue;
+        } catch (const pybind11::cast_error &) { }
+
+        // Try to cast to Array8f (list, tuple, numpy.array, ...)
+        try {
+            props.set_array8f(key, value.template cast<Properties::Array8f>());
             continue;
         } catch (const pybind11::cast_error &) { }
 
