@@ -1,3 +1,5 @@
+#include <drjit/tensor.h>
+
 #include <mitsuba/core/properties.h>
 #include <mitsuba/core/transform.h>
 #include <mitsuba/python/python.h>
@@ -25,6 +27,10 @@ extern Caster cast_object;
 
 py::object properties_get(const Properties& p, const std::string &key) {
     using PFloat = Properties::Float;
+    using TensorHandle = typename Properties::TensorHandle;
+    using Float = MI_VARIANT_FLOAT;
+    using TensorXf = dr::Tensor<mitsuba::DynamicBuffer<Float>>;
+
     // We need to ask for type information to return the right cast
     auto type = p.type(key);
     if (type == Properties::Type::Bool)
@@ -45,10 +51,14 @@ py::object properties_get(const Properties& p, const std::string &key) {
         return py::cast(p.get<dr::Array<PFloat, 3>>(key));
     else if (type == Properties::Type::Array8f)
         return py::cast(p.get<dr::Array<PFloat, 8>>(key));
-    else if (type == Properties::Type::Transform)
+    else if (type == Properties::Type::Transform3f)
+        return py::cast(p.get<Transform<Point<PFloat, 3>>>(key));
+    else if (type == Properties::Type::Transform4f)
         return py::cast(p.get<Transform<Point<PFloat, 4>>>(key));
     // else if (type == Properties::Type::AnimatedTransform)
         // return py::cast(p.animated_transform(key));
+    else if (type == Properties::Type::Tensor)
+        return py::cast(*(p.tensor<TensorXf>(key)));
     else if (type == Properties::Type::Object)
         return cast_object((ref<Object>)p.object(key));
     else if (type == Properties::Type::Pointer)
@@ -64,6 +74,9 @@ MI_PY_EXPORT(Properties) {
         using Color3d = Color<double, 3>;
         using Color8f = Color<float, 8>;
         using Color8d = Color<double, 8>;
+        using TensorHandle = typename Properties::TensorHandle;
+        using Float = MI_VARIANT_FLOAT;
+        using TensorXf = dr::Tensor<mitsuba::DynamicBuffer<Float>>;
 
         auto p = py::class_<Properties>(m, "Properties", D(Properties))
             // Constructors
@@ -101,11 +114,15 @@ MI_PY_EXPORT(Properties) {
             .SET_ITEM_BINDING(color8, Color8d, py::arg(), py::arg().noconvert())
             .SET_ITEM_BINDING(array3f, typename Properties::Array3f)
             .SET_ITEM_BINDING(array8f, typename Properties::Array8f)
+            .SET_ITEM_BINDING(transform3f, typename Properties::Transform3f)
             .SET_ITEM_BINDING(transform, typename Properties::Transform4f)
             // .SET_ITEM_BINDING(animated_transform, ref<AnimatedTransform>)
             .SET_ITEM_BINDING(object, ref<Object>)
             .GET_ITEM_DEFAULT_BINDING(string, string, std::string)
             // .GET_ITEM_DEFAULT_BINDING(animated_transform, animated_transform, ref<AnimatedTransform>)
+            .def("__setitem__",[](Properties& p, const std::string &key, const TensorXf &value) {
+                p.set_tensor_handle(key, TensorHandle(std::make_shared<TensorXf>(value)), false);
+            })
             .def("__getitem__", [](const Properties& p, const std::string &key) {
                 return properties_get(p, key);
             }, "key"_a, "Retrieve an existing property given its name")
@@ -124,6 +141,9 @@ MI_PY_EXPORT(Properties) {
             .def("__delitem__", [](Properties& p, const std::string &key) {
                 return p.remove_property(key);
             })
+            .def("as_string",
+                py::overload_cast<const std::string&>(&Properties::as_string, py::const_),
+                D(Properties, as_string))
             // Operators
             .def(py::self == py::self, D(Properties, operator_eq))
             .def(py::self != py::self, D(Properties, operator_ne))
@@ -135,8 +155,10 @@ MI_PY_EXPORT(Properties) {
             .value("Float",             Properties::Type::Float)
             .value("Array3f",           Properties::Type::Array3f)
             .value("Array8f",           Properties::Type::Array8f)
-            .value("Transform",         Properties::Type::Transform)
+            .value("Transform3f",       Properties::Type::Transform3f)
+            .value("Transform4f",       Properties::Type::Transform4f)
             // .value("AnimatedTransform", Properties::Type::AnimatedTransform)
+            .value("TensorHandle",      Properties::Type::Tensor)
             .value("Color",             Properties::Type::Color)
             .value("Color8",             Properties::Type::Color8)
             .value("String",            Properties::Type::String)

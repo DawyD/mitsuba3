@@ -15,6 +15,59 @@
 
 NAMESPACE_BEGIN(mitsuba)
 
+/**!
+
+.. _bsdf-measured:
+
+Measured material (:monosp:`measured`)
+--------------------------------------
+
+.. pluginparameters::
+
+ * - filename
+   - |string|
+   - Filename of the material data file to be loaded
+
+This plugin implements the data-driven material model described in the paper `An
+Adaptive Parameterization for Efficient Material Acquisition and Rendering
+<http://rgl.epfl.ch/publications/Dupuy2018Adaptive>`__. A database containing
+compatible materials is are `here <http://rgl.epfl.ch/materials>`__.
+
+Simply click on a material on this page and then download the *RGB* or
+*spectral* ``.bsdf`` file and pass it to the ``filename`` parameter of the
+plugin. Note that the spectral data files can only be used in a spectral
+variant of Mitsuba, and the RGB-based approximations require an RGB variant.
+The original measurements are spectral and cover the 360--1000nm range, hence
+it is strongly recommended that you use a spectral workflow. (Many colors
+cannot be reliably represented in RGB, as they are outside of the color gamut)
+
+.. subfigstart::
+.. subfigure:: ../../resources/data/docs/images/render/bsdf_measured_aniso_morpho_melenaus.jpg
+   :caption: Iridescent butterfly (Dorsal *Morpho Melenaus* wing, anisotropic)
+.. subfigure:: ../../resources/data/docs/images/render/bsdf_measured_aniso_cc_nothern_aurora.jpg
+   :caption: Vinyl car wrap material (TeckWrap RD05 *Northern Aurora*, isotropic)
+.. subfigend::
+   :label: fig-measured
+
+Note that this material is one-sided---that is, observed from the back side, it
+will be completely black. If this is undesirable, consider using the
+:ref:`twosided <bsdf-twosided>` BRDF adapter plugin. The following XML snippet
+describes how to import one of the spectral measurements from the database.
+
+.. tabs::
+    .. code-tab:: xml
+        :name: lst-measured
+
+        <bsdf type="measured">
+            <string name="filename" value="cc_nothern_aurora_spec.bsdf"/>
+        </bsdf>
+
+    .. code-tab:: python
+
+        'type': 'measured',
+        'filename': 'cc_nothern_aurora_spec.bsdf'
+
+*/
 template <typename Float, typename Spectrum>
 class Measured final : public BSDF<Float, Spectrum> {
 public:
@@ -26,9 +79,6 @@ public:
     using Warp2D3 = Marginal2D<Float, 3, true>;
 
     Measured(const Properties &props) : Base(props) {
-        if constexpr (is_polarized_v<Spectrum>)
-            Throw("The measured BSDF model requires that rendering takes place in spectral mode!");
-
         m_components.push_back(BSDFFlags::GlossyReflection | BSDFFlags::FrontSide);
         m_flags = m_components[0];
         dr::set_attr(this, "flags", m_flags);

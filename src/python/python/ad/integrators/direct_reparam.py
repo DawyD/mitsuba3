@@ -79,8 +79,6 @@ class DirectReparamIntegrator(ADIntegrator):
         # Enable antithetic sampling in the reparameterization?
         self.reparam_antithetic = props.get('reparam_antithetic', False)
 
-        self.params = None
-
     def reparam(self,
                 scene: mi.Scene,
                 rng: mi.PCG32,
@@ -137,13 +135,20 @@ class DirectReparamIntegrator(ADIntegrator):
         pi = scene.ray_intersect_preliminary(ray_reparam, active)
         si = pi.compute_surface_interaction(ray_reparam)
 
+        active_next = mi.Bool(active)
+
+        # Hide the environment emitter if necessary
+        if self.hide_emitters:
+            active_next &= si.is_valid()
+
         # Differentiable evaluation of intersected emitter / envmap
-        L += si.emitter(scene).eval(si)
+        L += si.emitter(scene).eval(si, active_next)
 
         # ------------------ Emitter sampling -------------------
 
         # Should we continue tracing to reach one more vertex?
-        active_next = si.is_valid()
+        active_next &= si.is_valid()
+
         # Get the BSDF. Potentially computes texture-space differentials.
         bsdf = si.bsdf(ray_reparam)
 
