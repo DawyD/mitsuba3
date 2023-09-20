@@ -204,6 +204,24 @@ ref<Object> create_texture_from(const py::dict &dict, bool within_emitter) {
         // Update the properties struct
         obj = mitsuba::xml::detail::create_texture_from_rgb(
                 "rgb", color, GET_VARIANT(), within_emitter);
+    } else if (type == "avx"){
+        if (dict.size() != 2) {
+            Throw("'avx' dictionary should always contain 2 entries "
+                  "('type' and 'value'), got %u.",
+                  dict.size());
+        }
+        // Read info from the dictionary
+        Properties::Color8f color(0.f);
+        for (auto &[k2, value2] : dict) {
+            std::string key2 = k2.template cast<std::string>();
+            if (key2 == "value")
+                color = value2.template cast<Properties::Color8f>();
+            else if (key2 != "type")
+                Throw("Unexpected key in avx dictionary: %s", key2);
+        }
+        // Update the properties struct
+        obj = mitsuba::xml::detail::create_texture_from_avx(
+            "avx", color, GET_VARIANT(), within_emitter);
     } else if (type == "spectrum") {
         if (dict.size() != 2) {
             Throw("'spectrum' dictionary should always contain 2 "
@@ -261,7 +279,7 @@ void parse_dictionary(DictParseContext &ctx,
     bool is_scene = (type == "scene");
     bool is_root = string::starts_with(path, "__root__");
 
-    if (type == "spectrum" || type == "rgb") {
+    if (type == "spectrum" || type == "rgb" || type == "avx") {
         inst.object = create_texture_from<Float, Spectrum>(dict, false);
         return;
     }
@@ -312,7 +330,7 @@ void parse_dictionary(DictParseContext &ctx,
             py::dict dict2 = value.template cast<py::dict>();
             std::string type2 = get_type(dict2);
 
-            if (type2 == "spectrum" || type2 == "rgb") {
+            if (type2 == "spectrum" || type2 == "rgb" || type2 == "avx") {
                 props.set_object(key, create_texture_from<Float, Spectrum>(dict2, within_emitter));
                 continue;
             }
