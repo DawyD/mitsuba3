@@ -357,9 +357,24 @@ public:
         }
     }
 
+    size_t base_channels_count() const override {
+        /// Number of desired color components
+        uint32_t color_ch = 8;
+
+        bool alpha = has_flag(m_flags, FilmFlags::Alpha);
+
+        /// Number of channels of the target tensor
+        return color_ch + (uint32_t) alpha;
+    }
+
     void schedule_storage() override {
         dr::schedule(m_storage->tensor());
     };
+
+    void clear() override {
+        if (m_storage)
+            m_storage->clear();
+    }
 
     std::string to_string() const override {
         std::ostringstream oss;
