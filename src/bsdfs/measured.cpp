@@ -33,21 +33,44 @@ public:
         m_flags = m_components[0];
         dr::set_attr(this, "flags", m_flags);
 
-        auto fs            = Thread::thread()->file_resolver();
-        fs::path file_path = fs->resolve(props.string("filename"));
-        m_name             = file_path.filename().string();
+        //auto fs            = Thread::thread()->file_resolver();
+        //fs::path file_path = fs->resolve(props.string("filename"));
+        //m_name             = file_path.filename().string();
+        m_name               = props.string("filename");
 
+        read_measured_brdf(m_name);
+    }
+
+    void read_measured_brdf(std::string &file_path) {
         ref<TensorFile> tf = new TensorFile(file_path);
-        auto theta_i       = tf->field("theta_i");
-        auto phi_i         = tf->field("phi_i");
-        auto ndf           = tf->field("ndf");
-        auto sigma         = tf->field("sigma");
-        auto vndf          = tf->field("vndf");
-        auto spectra       = tf->field("spectra");
-        auto luminance     = tf->field("luminance");
-        auto wavelengths   = tf->field("wavelengths");
-        auto description   = tf->field("description");
-        auto jacobian      = tf->field("jacobian");
+        using Field = TensorFile::Field;
+
+        const Field &theta_i       = tf->field("theta_i");
+        const Field &phi_i         = tf->field("phi_i");
+        const Field &ndf           = tf->field("ndf");
+        const Field &sigma         = tf->field("sigma");
+        const Field &vndf          = tf->field("vndf");
+        const Field &luminance     = tf->field("luminance");
+        const Field &description   = tf->field("description");
+        const Field &jacobian      = tf->field("jacobian");
+
+        Field spectra, wavelengths;
+        bool is_spectral = tf->has_field("wavelengths");
+
+        const ScalarFloat rgb_wavelengths[3] = { 0, 1, 2 };
+        if (is_spectral) {
+            spectra = tf->field("spectra");
+            wavelengths = tf->field("wavelengths");
+            if constexpr (!is_spectral_v<Spectrum>)
+                Throw("Measurements in spectral format require the use of a spectral variant of Mitsuba!");
+        } else {
+            spectra = tf->field("rgb");
+            if constexpr (!is_rgb_v<Spectrum> && !is_monochromatic_v<Spectrum>)
+                Throw("Measurements in RGB format require the use of a RGB variant of Mitsuba!");
+
+            wavelengths.shape.push_back(3);
+            wavelengths.data = rgb_wavelengths;
+        }
 
         if (!(description.shape.size() == 1 &&
               description.dtype == Struct::Type::UInt8 &&
@@ -58,8 +81,10 @@ public:
               phi_i.shape.size() == 1 &&
               phi_i.dtype == Struct::Type::Float32 &&
 
-              wavelengths.shape.size() == 1 &&
-              wavelengths.dtype == Struct::Type::Float32 &&
+              (!is_spectral || (
+                  wavelengths.shape.size() == 1 &&
+                  wavelengths.dtype == Struct::Type::Float32
+              )) &&
 
               ndf.shape.size() == 2 &&
               ndf.dtype == Struct::Type::Float32 &&
@@ -82,7 +107,7 @@ public:
               spectra.shape.size() == 5 &&
               spectra.shape[0] == phi_i.shape[0] &&
               spectra.shape[1] == theta_i.shape[0] &&
-              spectra.shape[2] == wavelengths.shape[0] &&
+              spectra.shape[2] == (is_spectral ? wavelengths.shape[0] : 3) &&
               spectra.shape[3] == spectra.shape[4] &&
 
               luminance.shape[2] == spectra.shape[3] &&
@@ -256,7 +281,8 @@ public:
 
         UnpolarizedSpectrum spec;
         for (size_t i = 0; i < dr::array_size_v<UnpolarizedSpectrum>; ++i) {
-            Float params_spec[3] = { phi_i, theta_i, si.wavelengths[i] };
+            Float params_spec[3] = { phi_i, theta_i,
+                is_spectral_v<Spectrum> ? si.wavelengths[i] : Float((float) i) };
             spec[i] = m_spectra.eval(sample, params_spec, active);
         }
 
@@ -270,6 +296,20 @@ public:
         active &= Frame3f::cos_theta(bs.wo) > 0;
 
         return { bs, (depolarizer<Spectrum>(spec) / bs.pdf) & active };
+    }
+
+    void traverse(TraversalCallback *callback) override {
+        Base::traverse(callback);
+        callback->put_parameter("name", m_name, +ParamFlags::NonDifferentiable);
+    }
+    
+    void parameters_changed(const std::vector<std::string> &keys = {}) override {
+
+        if (keys.empty() || string::contains(keys, "name"))
+            read_measured_brdf(m_name);
+
+        Base::parameters_changed(keys);
+
     }
 
     Spectrum eval(const BSDFContext &ctx, const SurfaceInteraction3f &si,
@@ -314,7 +354,8 @@ public:
 
         UnpolarizedSpectrum spec;
         for (size_t i = 0; i < dr::array_size_v<UnpolarizedSpectrum>; ++i) {
-            Float params_spec[3] = { phi_i, theta_i, si.wavelengths[i] };
+            Float params_spec[3] = { phi_i, theta_i,
+                is_spectral_v<Spectrum> ? si.wavelengths[i] : Float((float) i) };
             spec[i] = m_spectra.eval(sample, params_spec, active);
         }
 
