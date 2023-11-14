@@ -44,5 +44,5 @@
 	shallow = true
 [submodule "ext/drjit"]
 	path = ext/drjit
-	url = https://gitlab.csem.local/div-m/research/defect-anomaly-detection/ps-rendering/drjit
+	url = https://gitlab.csem.local/div-m/research/photometric-stereo/SPneXt/drjit
 	branch = AVX-array
